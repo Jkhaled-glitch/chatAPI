@@ -1,0 +1,39 @@
+USERS 
+
+    // @desc    Register new user
+    // @route   POST /users
+    // @access  Public
+
+    // @desc    Authenticate a user
+    // @route   POST /users/login
+    // @access  Public
+
+    // @desc    Get user data
+    // @route   GET /users/me
+    // @access  Private
+
+    // @desc    upload profile image (file key:  profile)
+    // @route   POST /users/uploadProfile 
+    // @access  Private(only user can upload your image profile)
+
+    // @desc    get profile image (url for profile image for user)
+    // @route   GET /users/:userId/uploadProfile 
+    // @access  Public
+
+CONVERSATION:
+
+    // @desc    add new conversation
+    // @route   POST /conversation/addConversation
+    // @access  current user
+  
+    // @desc    delete conversation
+    // @route   DELETE /conversation/:conversationId
+    // @access  user creator of conversation
+
+    // @desc    leave participant to conversation
+    // @route   PUT /conversation/:conversationId/removeParticipant
+    // @access  user  if participant and  not the  creator
+
+    // @desc    leave participant to conversation
+    // @route   PUT /conversation/:conversationId/addParticipant
+    // @access  current user  if a participant and  not the  creator of conversation
