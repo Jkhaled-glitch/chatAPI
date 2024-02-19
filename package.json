@@ -9,7 +9,7 @@
     },
     "author": "Khaled Jouablia",
     "engines": {
-        "node": "18.18.2"
+        "node": "18.12.1"
     },
     "license": "MIT",
     "dependencies": {
