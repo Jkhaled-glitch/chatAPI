@@ -9,9 +9,8 @@ const User = require('../models/userModel')
 // @access  Public
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, lastName, age, email, password, profile } = req.body
-
-
+  const { name, lastName, age, email, password,phone, profile } = req.body
+   console.log(req.body)
   // Check if user exists
   const userExists = await User.findOne({ email })
 
@@ -31,15 +30,13 @@ const registerUser = asyncHandler(async (req, res) => {
     age,
     email,
     password: hashedPassword,
+    phone,
     profile,
-    tentative: "0",
   })
 
   if (user) {
     res.status(201).json({
-      _id: user.id,
-      name: user.name,
-      email: user.email,
+      user:user,
       token: generateToken(user._id),
     })
   } else {
