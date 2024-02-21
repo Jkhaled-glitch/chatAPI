@@ -9,7 +9,7 @@ const cors = require('cors');
 const port = process.env.PORT
 
 
-
+const { protect } = require('./middleware/authMiddleware')
 const app = express();
 
 connectDB();
@@ -21,7 +21,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/uploads', express.static('./uploads'))
 
 app.use('/users', require('./routes/userRoutes'));
-app.use('/conversations', require('./routes/conversationRoutes'))
+app.use('/conversations',protect, require('./routes/conversationRoutes'))
 app.use(errorHandler);
 
 app.listen(port, () => console.log(`Server started on port ${port}`));

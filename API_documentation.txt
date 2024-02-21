@@ -3,37 +3,112 @@ USERS
     // @desc    Register new user
     // @route   POST /users
     // @access  Public
+    // @data    { name, lastName, age, email, password,phone, profile }
 
     // @desc    Authenticate a user
-    // @route   POST /users/login
+    // @route   POST /users/login 
     // @access  Public
+    // @data    { email, password }
 
     // @desc    Get user data
-    // @route   GET /users/me
+    // @route   GET /users/me (Authorization = 'Bearer '+token)
     // @access  Private
 
-    // @desc    upload profile image (file key:  profile)
-    // @route   POST /users/uploadProfile 
-    // @access  Private(only user can upload your image profile)
-
-    // @desc    get profile image (url for profile image for user)
-    // @route   GET /users/:userId/uploadProfile 
+     // @desc    Get user by id
+    // @route   GET /users/:userId
     // @access  Public
+    
+
+    // @desc    upload profile image (file key:  profile)
+    // @route   POST /users/profile 
+    // @access  Private(only user can upload your image profile)
+    // @data    {profile: file(image) }
+
+    // @desc    get profile image (url)
+    // @route   GET /users//:userId/profile 
+    // @access  Public
+    
+POSTS
+
+    // @desc    create new post
+    // @route   POST /users/posts
+    // @access  Private
+    // @data    { contentType, contentText, contentUrl(url :optional), contentFiles( image(s):optional) }
+
+    // @desc    get all user posts
+    // @route   GET /users/posts
+    // @access  private
+
+    // @desc    get post by id
+    // @route   GET /users/posts/:postId
+    // @access  Public
+
+    // @desc    delete post
+    // @route   DELETE /users/posts/:postId
+    // @access  Private (only creator of pub can deleted)
+
+    // @desc    Share post
+    // @route   POST /users/posts/:postId/shares
+    // @access  Private
+    // @data    {} without data
+
+
+COMMENTS
+
+    // @desc    create new comment
+    // @route   POST /users/posts/:postId/comments
+    // @access  Private
+    // @data    {content}
+
+
+    // @desc    get all comments for the post
+    // @route   GET users/posts/:postId/comments
+    // @access  public
+
+    // @desc    delete comment
+    // @route   DELETE /users/posts/:postId/comments/:commentId
+    // @access  Private (only creator of comment or owner of the post can delete a comment)
+
+    // @desc    add reaction to a comment
+    // @route   PUT /users/posts/:postId/comments/:commentId/addReaction
+    // @access  Private
+    // @data    { type }
+
+    // @desc    remove reaction to a comment
+    // @route   PUT users/posts/:postId/comments/:commentId/removeReaction
+    // @access  Private
+
+
 
 CONVERSATION:
 
     // @desc    add new conversation
-    // @route   POST /conversation/addConversation
+    // @route   POST /conversations/addConversation
     // @access  current user
+    // @data    { participants(array) }
   
-    // @desc    delete conversation
-    // @route   DELETE /conversation/:conversationId
+    // @desc    delete conversation (and  all messages)
+    // @route   DELETE /conversations/:conversationId
     // @access  user creator of conversation
 
-    // @desc    leave participant to conversation
-    // @route   PUT /conversation/:conversationId/removeParticipant
+    // @desc    remove participant to conversation
+    // @route   PUT /conversations/:conversationId/removeParticipant
     // @access  user  if participant and  not the  creator
+    // @data    
 
-    // @desc    leave participant to conversation
-    // @route   PUT /conversation/:conversationId/addParticipant
+    // @desc    add participant to conversation
+    // @route   PUT /conversations/:conversationId/addParticipant
     // @access  current user  if a participant and  not the  creator of conversation
+    // @data    { newMemberId }
+
+MESSAGES
+
+    // @desc    send new message
+    // @route   POST /conversations/:conversationId/message/send
+    // @access  participant in conversation
+    // @data    {sender,type,content}
+
+    // @desc    Update message 
+    // @route   PUT /conversations/:conversationId/message/:messageId
+    // @access  public 
+    // @data    { seenBy(optional), deletedFor(optional), status(optional) }

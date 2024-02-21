@@ -1,26 +1,54 @@
 const asyncHandler = require('express-async-handler')
 const messageController = require('../controllers/messageController');
 const Conversation = require('../models/conversationModel');
-
+const User = require('../models/userModel')
 // @desc    add new conversation
-// @route   POST /conversation/addConversation
+// @route   POST /conversation
 // @access  current user
 
 const addConversation = asyncHandler(async (req, res) => {
-  const { participants, type } = req.body;
+  const { participants } = req.body;
   const userId = req.user._id;
 
-  participants.unshift(userId);
 
-  // Vérifier le type de conversation et le nombre de participants
-  if ((type === 'individual' && participants.length > 1) ||
+  if (!participants || !Array.isArray(participants)) {
+    res.status(400);
+    throw new Error('participants[] field is required');
+  }
+
+  if (!participants.includes(userId)) {
+    participants.unshift(userId);
+  }
+
+  for (const participantId of participants) {
+    const user = await User.findById(participantId);
+    if (!user) {
+      res.status(400);
+      throw new Error(`User with ID ${participantId} does not exist`);
+    }
+  }
+
+  const existingConversation = await Conversation.findOne({
+    type: { $in: ['individual', 'private'] },
+    participants: { $all: participants }
+  });
+
+  if (existingConversation) {
+    res.status(409);
+    throw new Error('Conversation already exists with the same participants');
+  }
+
+  const type = participants.length === 1 ? 'individual' :
+    participants.length === 2 ? 'private' : 'group'
+
+
+  // Check the type of convesation and the number of participant
+  if (((!type || type === 'individual') && participants.length !== 1) ||
     (type === 'private' && participants.length !== 2) ||
     (type === 'group' && participants.length < 2)) {
     res.status(400);
     throw new Error('Invalid combination of conversation type and participants');
   }
-
-
 
   const conversation = await Conversation.create({
     participants,
@@ -93,7 +121,7 @@ const removeParticipant = asyncHandler(async (req, res) => {
 
   if (conversation.participants[0].toString() === userId.toString()) {
     res.status(403);
-    throw new Error('Unauthorized: Cannot remove the first participant from the conversation');
+    throw new Error('Cannot remove the owner of the conversation');
   }
 
 
@@ -116,15 +144,16 @@ const removeParticipant = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    leave participant to conversation
+// @desc    add participant to conversation
 // @route   PUT /conversation/:conversationId/addParticipant
 // @access  user  if participant and  not the  creator
 
 const addParticipant = asyncHandler(async (req, res) => {
-  const conversationId = req.params.conversationId;
-  const newMemberId = req.body.newMemberId; // Supposons que vous envoyez le nouvel ID de membre dans le corps de la requête
+  const { newMemberId } = req.body;
 
-  // Rechercher la conversation
+  const conversationId = req.params.conversationId;
+  const userId = req.user._id;
+
   const conversation = await Conversation.findById(conversationId);
 
   if (!conversation) {
@@ -132,15 +161,18 @@ const addParticipant = asyncHandler(async (req, res) => {
     throw new Error('Conversation not found');
   }
 
-  const userId = req.user._id; // Supposons que vous avez l'ID de l'utilisateur dans req.user._id
-
-  // Vérifier si l'utilisateur est autorisé à ajouter un membre à la conversation
-  if (conversation.participants[0].toString() !== userId.toString()) {
+  if (!conversation.participants.includes(userId)) {
     res.status(403);
-    throw new Error('Unauthorized: Only the first participant can add a member to the conversation');
+    throw new Error('Unauthorized: User is not a member of the conversation');
   }
 
-  // Ajouter le nouveau membre à la liste des participants de la conversation
+  if (conversation.type !== 'group') {
+    res.status(400);
+    throw new Error('Cannot add member to this conversation');
+
+  }
+
+
   conversation.participants.push(newMemberId);
   const updatedConversation = await conversation.save();
 

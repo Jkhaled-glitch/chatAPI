@@ -2,15 +2,16 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const multer = require('multer');
 const asyncHandler = require('express-async-handler')
+const mongoose = require('mongoose');
 const User = require('../models/userModel')
 
+
 // @desc    Register new user
-// @route   POST /api/users
+// @route   POST /users/
 // @access  Public
 
 const registerUser = asyncHandler(async (req, res) => {
   const { name, lastName, age, email, password,phone, profile } = req.body
-   console.log(req.body)
   // Check if user exists
   const userExists = await User.findOne({ email })
 
@@ -47,7 +48,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 
 // @desc    Authenticate a user
-// @route   POST /api/users/login
+// @route   POST /users/login
 // @access  Public
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body
@@ -73,12 +74,37 @@ const loginUser = asyncHandler(async (req, res) => {
 
 })
 
+
+
 // @desc    Get user data
-// @route   GET /api/users/me
+// @route   GET /users/me
 // @access  Private
 const getMe = asyncHandler(async (req, res) => {
-
+   
   res.status(200).json(req.user)
+})
+
+// @desc    Get user by Id
+// @route   GET /users/:userId
+// @access  Public
+const getUserById = asyncHandler(async (req, res) => {
+  const userId = req.params.userId
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    res.status(400);
+    throw new Error('Invalid user ID');
+  }
+  // Check for userId
+  const user = await User.findById(userId)
+
+  if (!user) { 
+    res.status(404)
+    throw new Error('User Not Found!')
+  } 
+
+  const {_id,name,lastName,age,email,phone,isActive,profile , createdAt,updatedAt} = user
+
+  res.status(200).json({_id,name,lastName,age,email,phone,profile, isActive , createdAt,updatedAt})
 })
 
 // Generate JWT
@@ -91,13 +117,12 @@ const generateToken = (id) => {
 
 
 // @desc    upload profile image
-// @route   POST /users/:userId/uploadProfile
+// @route   POST /users/:userId/profile
 // @access  Private
 
 const uploadProfile = async (req, res) => {
-  const userId = req.params.userId;
+  const userId = req.user._id;
   const profile = req.file;
-
   try {
     // Rechercher l'utilisateur par son ID
     const user = await User.findById(userId);
@@ -117,7 +142,7 @@ const uploadProfile = async (req, res) => {
 };
 
 // @desc    get profile image
-// @route   POST /users/uploadProfile 
+// @route   POST /users/:userId/profile 
 // @access  Public
 
 const getProfileImage = async (req, res) => {
@@ -158,6 +183,7 @@ module.exports = {
   registerUser,
   loginUser,
   getMe,
+  getUserById,
   getProfileImage,
   uploadProfile,
   upload

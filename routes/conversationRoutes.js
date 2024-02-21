@@ -1,4 +1,5 @@
 const express = require('express')
+
 const router = express.Router()
 const {
     addConversation,
@@ -6,12 +7,16 @@ const {
     addParticipant,
     removeParticipant
 } = require('../controllers/conversationController')
+messageRoutes = require('./messageRoutes')
 
-const { protect } = require('../middleware/authMiddleware')
 
-router.post('/addConversation', protect, addConversation)
-router.delete(":conversationId", protect, deleteConversation)
-router.put('/:conversationId/addParticipant', protect, addParticipant)
-router.put('/:conversationId/removeParticipant', protect, removeParticipant)
+router.post('/addConversation', addConversation)
+router.delete(":conversationId",  deleteConversation)
+router.put('/:conversationId/addParticipant', addParticipant)
+router.put('/:conversationId/removeParticipant',  removeParticipant)
+
+// Message Routes
+router.use('/', messageRoutes);
+
 
 module.exports = router

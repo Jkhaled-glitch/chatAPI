@@ -1,25 +1,52 @@
+const mongoose = require('mongoose')
 const asyncHandler = require('express-async-handler')
 const Message = require('../models/messageModel')
+const Conversation = require('../models/conversationModel')
+
 
 // @desc    send new message
-// @route   POST /:conversationId/message/send
+// @route   POST /conversations/:conversationId/message/send
 // @access  current user and participant in conversation
 
 const sendMessage = asyncHandler(async (req, res) => {
-  const { sender, receivers, type, content, seenBy, deletedFor, status } = req.body
+  const { type, content } = req.body
+  const sender = req.user._id;
   const conversationId = req.params.conversationId;
+
+
+  if (!mongoose.Types.ObjectId.isValid(conversationId)) {
+    res.status(400);
+    throw new Error('Invalid conversation ID');
+  }
+
+  const conversation = await Conversation.findById(conversationId);
+  if (!conversation) {
+    res.status(404);
+    throw new Error('Conversation not Found');
+  }
+  const isUserParticipant = conversation.participants.some(participant => participant.equals(sender));
+  if (!isUserParticipant) {
+    res.status(403);
+    throw new Error('Sender are not a participant of this conversation');
+  }
   // Create message
   const message = await Message.create({
-    sender,
+    sender: sender,
     conversationId: conversationId,
     type,
     content,
-    seenBy,
-    deletedFor,
-    status,
+    seenBy: [],
+    deletedFor: [],
   })
 
   if (message) {
+    //update conversation
+    await Conversation.findOneAndUpdate(
+      { _id: conversationId },
+      { $push: { messages: { $each: [message._id], $position: 0 } } },
+      { new: true }
+    );
+
     res.status(201).json(message)
   } else {
     res.status(400)
@@ -30,28 +57,69 @@ const sendMessage = asyncHandler(async (req, res) => {
 
 
 // @desc    Update message 
-// @route   PUT /:convId/message/put/:messageId
+// @route   PUT /conversations/:conversationId/message/:messageId
 // @access  public 
 
 const updateMessage = asyncHandler(async (req, res) => {
   const { seenBy, deletedFor, status } = req.body;
-  const messageId = req.params.messageId;
-  const userId = req.user._id; // Supposons que vous avez l'ID de l'utilisateur dans req.user._id
+  const userId = req.user._id;
+  const { conversationId, messageId } = req.params;
+
   const options = { new: true };
 
+  let hasData = false;
+
   const updateFields = {};
-  updateFields.$addToSet = { seenBy: { $each: seenBy } };
-  updateFields.$addToSet = { deletedFor: { $each: deletedFor } };
 
-  if (status && status === "removed") {
-    // Vérifier si l'utilisateur est l'expéditeur du message
-    const message = await Message.findOne({ _id: messageId, sender: userId });
 
-    if (!message) {
-      res.status(403);
-      throw new Error('Unauthorized: Only the sender can remove the message');
+
+
+  const message = await Message.findOne({ _id: messageId, conversationId });
+
+  if (!message) {
+    res.status(404);
+    throw new Error('Message not found in the conversation');
+  }
+  const conversation = Conversation.findById(conversationId)
+
+  if (seenBy && seenBy.length > 0) {
+    for (const participantId of seenBy) {
+      if (!conversation.participants.includes(participantId)) {
+        res.status(400);
+        throw new Error(`Participant ${participantId} is not in the conversation`);
+      }
     }
-    updateFields.status = "removed";
+    updateFields.$addToSet = { seenBy: { $each: seenBy } };
+    hasData = true;
+  }
+
+  if (deletedFor && deletedFor.length > 0) {
+    for (const participantId of deletedFor) {
+      if (!conversation.participants.includes(participantId)) {
+        res.status(400);
+        throw new Error(`Participant ${participantId} is not in the conversation`);
+      }
+    }
+    updateFields.$addToSet = { deletedFor: { $each: deletedFor } };
+    hasData = true;
+  }
+  if (status) {
+    if (status === "removed") {
+      if (message.sender !== userId) {
+        res.status(403);
+        throw new Error('Unauthorized: Only the sender can remove the message');
+      }
+      updateFields.status = "removed";
+    } else {
+      res.status(400);
+      throw new Error('Invalid status Data');
+    }
+    hasData = true;
+  }
+
+  if (!hasData) {
+    res.status(400);
+    throw new Error('Data is required to set message');
   }
 
   const updatedMessage = await Message.findOneAndUpdate(
@@ -69,8 +137,9 @@ const updateMessage = asyncHandler(async (req, res) => {
 });
 
 
+
 // @desc    delete all message from conversation
-// @route   DELETE /:convId/message/deleteAllMessageFromConversation
+// @route   DELETE /:conversationId/message/deleteAllMessageFromConversation
 // @access  public 
 
 const deleteAllMessageFromConversation = asyncHandler(async (req, res) => {

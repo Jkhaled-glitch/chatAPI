@@ -8,8 +8,8 @@ const conversationSchema = new mongoose.Schema({
   }],
   type: {
     type: String,
-    Enum: ['individual', 'private', 'group'],
-    default: 'private',
+    enum: ['individual', 'private', 'group'],
+    default: 'individual',
     required: true
   },
   messages: [{
