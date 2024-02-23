@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
-const multer = require('multer');
 const asyncHandler = require('express-async-handler')
 const mongoose = require('mongoose');
+const downloadFileToServer = require('../config/downloadFileToServer');
+const uploadfileMiddleware = require('../config/uploadfileMiddleware')
 const User = require('../models/userModel')
 
 
@@ -11,7 +12,7 @@ const User = require('../models/userModel')
 // @access  Public
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, lastName, age, email, password,phone, profile } = req.body
+  const { name, lastName, age, email, password, phone, profile } = req.body
   // Check if user exists
   const userExists = await User.findOne({ email })
 
@@ -37,7 +38,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   if (user) {
     res.status(201).json({
-      user:user,
+      user: user,
       token: generateToken(user._id),
     })
   } else {
@@ -80,7 +81,7 @@ const loginUser = asyncHandler(async (req, res) => {
 // @route   GET /users/me
 // @access  Private
 const getMe = asyncHandler(async (req, res) => {
-   
+
   res.status(200).json(req.user)
 })
 
@@ -97,14 +98,14 @@ const getUserById = asyncHandler(async (req, res) => {
   // Check for userId
   const user = await User.findById(userId)
 
-  if (!user) { 
+  if (!user) {
     res.status(404)
     throw new Error('User Not Found!')
-  } 
+  }
 
-  const {_id,name,lastName,age,email,phone,isActive,profile , createdAt,updatedAt} = user
+  const { _id, name, lastName, age, email, phone, isActive, profile, createdAt, updatedAt } = user
 
-  res.status(200).json({_id,name,lastName,age,email,phone,profile, isActive , createdAt,updatedAt})
+  res.status(200).json({ _id, name, lastName, age, email, phone, profile, isActive, createdAt, updatedAt })
 })
 
 // Generate JWT
@@ -117,29 +118,44 @@ const generateToken = (id) => {
 
 
 // @desc    upload profile image
-// @route   POST /users/:userId/profile
+// @route   POST /users/profile
 // @access  Private
 
-const uploadProfile = async (req, res) => {
-  const userId = req.user._id;
-  const profile = req.file;
-  try {
-    // Rechercher l'utilisateur par son ID
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+const uploadProfile = asyncHandler(async (req, res) => {
+  uploadfileMiddleware(req, res, async (err) => {
+    if (err) {
+      return res.status(400).json({ message: err.message });
     }
+    const userId = req.user._id;
+    const file = req.file;
 
-    // Sauvegarder le chemin de l'image de profil dans le document de l'utilisateur
-    user.profile.unshift(profile.path);
-    await user.save();
+    try {
+      if (!file) {
+        throw new Error('No file to upload')
+      }
+      const fileUrl = await downloadFileToServer(file, 'profile'); 
+      if (!fileUrl) {
+        res.status(400);
+        throw new Error("Failed when saving the file");
+      }
 
-    res.status(201).json(user);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      user.profile.unshift(fileUrl);
+      await user.save();
+
+      res.status(201).json(user);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+});
+
+
+
 
 // @desc    get profile image
 // @route   POST /users/:userId/profile 
@@ -152,32 +168,14 @@ const getProfileImage = async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
+      return res.status(404).json({ message: "User not Found" });
     }
-
-    // Obtenir l'URL de base de l'API à partir de req
-    const baseUrl = req.protocol + '://' + req.get('host');
-
-    // Renvoyer l'URL complète de l'image de profil
-    const profileImageUrl = baseUrl + '/' + user.profile[0].replace(/\\/g, '/');
-    res.status(200).json({ profileImage: profileImageUrl });
+    res.status(200).json({ profileImage: user.profile[0] });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-
-//storage for images profiles
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/profiles');
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
-});
-
-const upload = multer({ storage: storage });
 
 module.exports = {
   registerUser,
@@ -186,5 +184,4 @@ module.exports = {
   getUserById,
   getProfileImage,
   uploadProfile,
-  upload
 }

@@ -4,21 +4,19 @@ const colors = require('colors');
 const dotenv = require('dotenv').config();
 const { errorHandler } = require('./middleware/errorMiddleware');
 const connectDB = require('./config/db');
-const axios = require('axios');
 const cors = require('cors');
-const port = process.env.PORT
-
-
+const bodyParser = require('body-parser');
 const { protect } = require('./middleware/authMiddleware')
+const port = process.env.PORT
 const app = express();
 
 connectDB();
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors());
 
-//static folders
-app.use('/uploads', express.static('./uploads'))
 
 app.use('/users', require('./routes/userRoutes'));
 app.use('/conversations',protect, require('./routes/conversationRoutes'))
