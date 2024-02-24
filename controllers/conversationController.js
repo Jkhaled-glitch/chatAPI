@@ -2,6 +2,9 @@ const asyncHandler = require('express-async-handler')
 const messageController = require('../controllers/messageController');
 const Conversation = require('../models/conversationModel');
 const User = require('../models/userModel')
+
+
+
 // @desc    add new conversation
 // @route   POST /conversation
 // @access  current user
@@ -86,9 +89,11 @@ const deleteConversation = asyncHandler(async (req, res) => {
     res.status(403);
     throw new Error('Unauthorized: Only the creator can delete the conversation');
   }
+  
 
   //delete all messages of this conversation  
   await messageController.deleteAllMessageFromConversation(conversationId);
+  
   //delete the conversation
   const deletedConversation = await Conversation.findByIdAndDelete(conversationId);
 
@@ -98,6 +103,7 @@ const deleteConversation = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error('Failed to delete conversation');
   }
+  
 });
 
 

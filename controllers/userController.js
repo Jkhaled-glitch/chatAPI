@@ -133,7 +133,7 @@ const uploadProfile = asyncHandler(async (req, res) => {
       if (!file) {
         throw new Error('No file to upload')
       }
-      const fileUrl = await downloadFileToServer(file, 'profile'); 
+      const fileUrl = await downloadFileToServer(file, 'profiles'); 
       if (!fileUrl) {
         res.status(400);
         throw new Error("Failed when saving the file");

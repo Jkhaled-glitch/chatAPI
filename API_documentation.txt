@@ -106,7 +106,7 @@ MESSAGES
     // @desc    send new message
     // @route   POST /conversations/:conversationId/message/send
     // @access  participant in conversation
-    // @data    {type,content}
+    // @data    {type,content,file( optionnal:(formData & 'Content-Type': 'multipart/form-data' ) )}
 
     // @desc    Update message 
     // @route   PUT /conversations/:conversationId/message/:messageId

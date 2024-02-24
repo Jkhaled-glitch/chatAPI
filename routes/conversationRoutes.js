@@ -11,7 +11,7 @@ messageRoutes = require('./messageRoutes')
 
 
 router.post('/addConversation', addConversation)
-router.delete(":conversationId",  deleteConversation)
+router.delete("/:conversationId",  deleteConversation)
 router.put('/:conversationId/addParticipant', addParticipant)
 router.put('/:conversationId/removeParticipant',  removeParticipant)
 
