@@ -17,6 +17,10 @@ USERS
      // @desc    Get user by id
     // @route   GET /users/:userId
     // @access  Public
+
+    // @desc    verify if user exist
+    // @route   GET /users/isUser
+    // @access  public
     
 
     // @desc    upload profile image (file key:  profile)
@@ -37,7 +41,7 @@ POSTS
 
     // @desc    get all user posts
     // @route   GET /users/posts
-    // @access  private
+    // @access  public
 
     // @desc    get post by id
     // @route   GET /users/posts/:postId
@@ -51,6 +55,15 @@ POSTS
     // @route   POST /users/posts/:postId/shares
     // @access  Private
     // @data    {} without data
+
+    // @desc    add reaction to a post
+    // @route   PUT /users/posts/:postId/addReaction
+    // @access  Private
+    // @data    { type }
+
+    // @desc    remove reaction to a comment
+    // @route   PUT users/posts/:postId/removeReaction
+    // @access  Private
 
 
 COMMENTS

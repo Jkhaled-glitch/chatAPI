@@ -17,7 +17,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const userExists = await User.findOne({ email })
 
   if (userExists) {
-    res.status(400)
+    res.status(409)
     throw new Error('User already exists')
   }
 
@@ -26,7 +26,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, salt)
 
   // Create user
-  const user = await User.create({
+  const newUser = await User.create({
     name,
     lastName,
     age,
@@ -36,10 +36,9 @@ const registerUser = asyncHandler(async (req, res) => {
     profile,
   })
 
-  if (user) {
+  if (newUser) {
     res.status(201).json({
-      user: user,
-      token: generateToken(user._id),
+      token: generateToken(newUser._id),
     })
   } else {
     res.status(400)
@@ -60,12 +59,6 @@ const loginUser = asyncHandler(async (req, res) => {
 
   if (user && (await bcrypt.compare(password, user.password))) {
     res.json({
-      _id: user.id,
-      name: user.name,
-      email: user.email,
-      lastName: user.lastName,
-      age: user.age,
-      profile: user.profile,
       token: generateToken(user._id),
     })
   } else {
@@ -81,9 +74,23 @@ const loginUser = asyncHandler(async (req, res) => {
 // @route   GET /users/me
 // @access  Private
 const getMe = asyncHandler(async (req, res) => {
-
-  res.status(200).json(req.user)
+  if(req.user){
+    res.status(200).json(req.user)
+  }
 })
+
+
+// @desc    verifier if user exist
+// @route   GET /users/isUser
+// @access  public
+
+const isUser = asyncHandler(async (req, res) => {
+  if(req.user){
+    res.status(200).json({message:'User Exist'})
+  }
+  
+})
+
 
 // @desc    Get user by Id
 // @route   GET /users/:userId
@@ -181,6 +188,7 @@ module.exports = {
   registerUser,
   loginUser,
   getMe,
+  isUser,
   getUserById,
   getProfileImage,
   uploadProfile,

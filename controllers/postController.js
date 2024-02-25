@@ -75,10 +75,11 @@ const createPost = asyncHandler(async (req, res) => {
 
 // @desc    get all user posts
 // @route   GET /users/posts
-// @access  private
+// @access  public
 const getPosts = asyncHandler(async (req, res) => {
-    const user = req.user;
-    const posts = await Post.find({ user: user._id });
+    
+    //const user = req.user;
+    const posts = await Post.find();
     res.json(posts);
 });
 
@@ -173,6 +174,73 @@ const sharePost = async (req, res) => {
     res.status(201).json(savedPost);
 };
 
+// @desc    add reaction to a post
+// @route   PUT /users/posts/:postId/addReaction
+// @access  Private
+const addReaction = asyncHandler(async (req, res) => {
+    const { type } = req.body;
+    const userId = req.user._id;
+    const postId = req.params.postId;
+
+    // Check if the post exists
+    const post = await Post.findById(postId);
+    if (!post) {
+        res.status(404);
+        throw new Error('Post not found');
+    }
+
+    // Add reaction to the reactions array
+    // Check if the user has already reacted
+    const existingReaction = post.reactions.find(reaction => reaction.user.toString() === userId.toString());
+
+    if (existingReaction) {
+        existingReaction.type = type;
+    } else {
+        post.reactions.push({
+            user: userId,
+            type
+        });
+    }
+
+    await post.save();
+    res.status(200).json({ message: 'Reaction added successfully' });
+});
+
+
+
+
+
+// @desc    remove reaction to a post
+// @route   PUT users/posts/:postId/removeReaction
+// @access  Private
+
+const removeReaction = asyncHandler(async (req, res) => {
+    const  userId  = req.user._id;
+    const postId = req.params.postId;
+
+    // Check if the post exists
+    const post = await Post.findById(postId);
+    if (!post) {
+        res.status(404);
+        throw new Error('Post not found');
+    }
+    // Find the index of the reaction in the reactions array
+    const reactionIndex = post.reactions.findIndex(reaction => reaction.user.toString() === userId.toString());
+
+    // Check if the reaction exists in the comment
+    if (reactionIndex === -1) {
+        res.status(200);
+        throw new Error('Reaction not found');
+    }
+
+    // Remove the reaction from the reactions array
+    post.reactions.splice(reactionIndex, 1);
+      
+    // Save the updated comment
+    await post.save();
+    res.status(200).json({ message: 'Reaction removed successfully' });
+});
+
 
 module.exports = {
     createPost,
@@ -180,4 +248,6 @@ module.exports = {
     getPostById,
     deletePost,
     sharePost,
+    addReaction,
+    removeReaction
 };

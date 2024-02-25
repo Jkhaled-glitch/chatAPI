@@ -176,7 +176,7 @@ const removeReaction = asyncHandler(async (req, res) => {
 
     // Check if the reaction exists in the comment
     if (reactionIndex === -1) {
-        res.status(404);
+        res.status(200);
         throw new Error('Reaction not found');
     }
 
