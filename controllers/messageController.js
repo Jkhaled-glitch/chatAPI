@@ -45,6 +45,7 @@ const sendMessage = asyncHandler(async (req, res) => {
 
 
       if (!type || type === 'text' || type === '') {
+        type = 'text'
         if (!content || content.length == 0) {
           return res.status(400).json({ message: 'Content cannot be empty' });
         }
@@ -60,19 +61,21 @@ const sendMessage = asyncHandler(async (req, res) => {
             const file = req.file;
             if (!file) {
               throw new Error('No file uploaded');
+            } else {
+              //file handler
+              type = file.mimetype.startsWith('image/') ? 'image' : 'file';
+
+              content = await downloadFileToServer(file, type);
+
             }
 
-            // Détermination du type en fonction du mimetype
-            type = file.mimetype.startsWith('image/') ? 'image' : 'file';
-
-            // Téléchargement du fichier et mise à jour du contenu
-            content = await downloadFileToServer(file, type);
+          } else {
+            throw new Error('Type is Not Valide');
           }
 
         }
       }
 
-      // Création du message pour les types autres que 'file', 'image' ou 'text'
 
       const message = await Message.create({
         sender: sender,
@@ -185,49 +188,39 @@ const updateMessage = asyncHandler(async (req, res) => {
 
 
 const deleteAllMessageFromConversation = async (conversationId) => {
- 
 
   try {
     const messages = await Message.find({ conversation: conversationId });
 
-    const filenames = messages.filter(message => message.type === 'file' ).map(message => {
-      
+    const filenames = messages.filter(message => message.type === 'file').map(message => {
+
       const filenameRegex = /\/([^/]+)$/;
       const match = filenameRegex.exec(message.content);
       if (match && match.length > 1) {
-        return match[1]; 
+        return match[1];
       }
       return null;
     }).filter(filename => filename !== null);
 
-    const imagenames = messages.filter( message => message.type === 'image').map(message => {
-      
+    const imagenames = messages.filter(message => message.type === 'image').map(message => {
+
       const filenameRegex = /\/([^/]+)$/;
       const match = filenameRegex.exec(message.content);
       if (match && match.length > 1) {
-        return match[1]; 
+        return match[1];
       }
       return null;
     }).filter(filename => filename !== null);
-     
-    console.log(filenames)
-    console.log(imagenames)
-     //delete all files and images for the conversation
-   filenames.length!=0 && await deleteFilesFromStorage(`files`,filenames)
-   imagenames.length!=0 && await deleteFilesFromStorage(`images`,imagenames)
 
-  //delete all messages data for the conversation
-  const deletedMessages = await Message.deleteMany({ conversation: conversationId });
+    //delete all files and images for the conversation
+    filenames.length != 0 && await deleteFilesFromStorage(`files`, filenames)
+    imagenames.length != 0 && await deleteFilesFromStorage(`images`, imagenames)
 
-    if (deletedMessages) {
-      res.status(200).json({ message: 'All messages from the conversation deleted successfully', deletedMessages: messagesInfo });
-    } else {
-      res.status(400);
-      throw new Error('Failed to delete messages from the conversation');
-    }
-    
+    //delete all messages data for the conversation
+    await Message.deleteMany({ conversation: conversationId });
+
   } catch (error) {
-    throw new Error('Failed to delete messages from the conversation:'+ error.message );
+    throw new Error('Failed to delete messages from the conversation:' + error.message);
   }
 }
 

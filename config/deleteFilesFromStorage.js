@@ -1,13 +1,13 @@
 const axios = require('axios');
 
-const deleteFilesFromStorage = async (destination,filenames) => {
-    console.log('deleteFilesFromStorage')
-    try {
+
+const deleteFilesFromStorage = async (destination,files) => {
+    try { 
         
-       
-        await axios.delete(`${process.env.SERVER_STORAGE_BASE_URI}/${destination}`, {filenames} );
+         await axios.delete(`${process.env.SERVER_STORAGE_BASE_URI}/${destination}`, { data: { filenames: files } } );
+
     } catch (err) {
-        throw new Error('Storage Error : '+err)
+        throw new Error(' Storage Error : '+err)
     }
     return
 

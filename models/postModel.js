@@ -9,7 +9,7 @@ const postSchema = new mongoose.Schema({
     },
     contentType: {
         type: String,
-        enum: ['text', 'image', 'video', 'mixed'],
+        enum: ['text', 'image','url', 'mixed'],
         required: true
     },
     contentText: {
