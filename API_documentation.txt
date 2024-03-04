@@ -26,11 +26,46 @@ USERS
     // @desc    upload profile image (file key:  profile)
     // @route   POST /users/profile 
     // @access  Private(only user can upload your image profile)
-    // @data    {profile: file(image) }
+    // @data    { file: file(image) }
 
     // @desc    get profile image (url)
     // @route   GET /users//:userId/profile 
     // @access  Public
+
+    // @desc    update user Data
+    // @route   PUT /users/updateData
+    // @access  Private 
+    // @data    { name, lastName, phone, email }
+
+    // @desc    update user password
+    // @route   PUT /users/updatePassword
+    // @access  Private 
+    // @data     { oldPassword, newPassword }
+
+    // @desc    remove profile image
+    // @route   PUT /users/removeProfile
+    // @access  Private
+
+
+    // @desc    Send friend request
+    // @route   POST /users/sendFriendRequest/:friendId
+    // @access  Private
+
+    // @desc    Accept friend request
+    // @route   PUT /users/acceptFriendRequest/:requestId
+    // @access  Private
+
+
+    // @desc    Reject friend request
+    // @route   PUT /users/rejectFriendRequest/:requestId
+    // @access  Private
+
+    // @desc    Get user's friends
+    // @route   GET /users/friends
+    // @access  Private
+
+
+   
     
 POSTS
 
@@ -76,7 +111,7 @@ COMMENTS
 
     // @desc    get all comments for the post
     // @route   GET users/posts/:postId/comments
-    // @access  public
+    // @access  private(only Authenticated user can get)
 
     // @desc    delete comment
     // @route   DELETE /users/posts/:postId/comments/:commentId

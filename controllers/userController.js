@@ -34,6 +34,11 @@ const registerUser = asyncHandler(async (req, res) => {
     password: hashedPassword,
     phone,
     profile,
+    friends:{
+      list : [],
+      requests :[],
+      waiting :[]
+    }
   })
 
   if (newUser) {
@@ -75,7 +80,9 @@ const loginUser = asyncHandler(async (req, res) => {
 // @access  Private
 const getMe = asyncHandler(async (req, res) => {
   if(req.user){
-    res.status(200).json(req.user)
+    
+    const { _id, name, lastName, age, email, phone, isActive, profile,friends, createdAt, updatedAt } = req.user
+    res.status(200).json({ _id, name, lastName, age, email, phone, isActive, profile,friends, createdAt, updatedAt })
   }
 })
 
@@ -88,7 +95,6 @@ const isUser = asyncHandler(async (req, res) => {
   if(req.user){
     res.status(200).json({message:'User Exist'})
   }
-  
 })
 
 
@@ -110,10 +116,80 @@ const getUserById = asyncHandler(async (req, res) => {
     throw new Error('User Not Found!')
   }
 
-  const { _id, name, lastName, age, email, phone, isActive, profile, createdAt, updatedAt } = user
+  const { _id, name, lastName, age, email, phone, isActive, profile,friends, createdAt, updatedAt } = user
 
-  res.status(200).json({ _id, name, lastName, age, email, phone, profile, isActive, createdAt, updatedAt })
+  res.status(200).json({ _id, name, lastName, age, email, phone, profile,friends, isActive, createdAt, updatedAt })
 })
+
+
+// @desc    update user Data
+// @route   PUT /users/updateData
+// @access  Private 
+const updateData = asyncHandler(async (req, res) => {
+
+    
+  const userId = req.user._id;
+
+  const { name, lastName, phone, email } = req.body;
+  try {
+  
+
+    const user = await User.findById(userId);
+    user.name = name;
+    user.lastName = lastName;
+    user.phone = phone;
+    user.email = email;
+
+    updatedUser = await user.save()
+
+    if(updatedUser){
+      return res.status(200).json({ message: 'User updated successfully' });
+    }
+
+   else {
+     return res.status(400).send({message : 'Failed to update user data!'})
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @desc    update user password
+// @route   PUT /users/updateData
+// @access  Private 
+const updatePassword = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { oldPassword, newPassword } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+
+    // Verify if the old password is valid
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: 'Old password is not valid' });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update the user's password
+    user.password = hashedPassword;
+    const updatedUser = await user.save();
+
+    if (updatedUser) {
+      return res.status(200).json({ message: 'Password updated successfully' });
+    } else {
+      throw new Error('Failed to update password');
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+
 
 // Generate JWT
 const generateToken = (id) => {
@@ -154,11 +230,32 @@ const uploadProfile = asyncHandler(async (req, res) => {
       user.profile.unshift(fileUrl);
       await user.save();
 
-      res.status(201).json(user);
+      res.status(201).json({message : "Image Profile added successfully"});
     } catch (err) {
       res.status(400).json({ message: err.message });
     }
   });
+});
+
+
+// @desc    remove profile image
+// @route   PUT /users/removeProfile
+// @access  Private
+
+const removeProfile = asyncHandler(async (req, res) => {
+  
+    const userId = req.user._id;
+
+    try {
+      const user = await User.findById(userId);
+      user.profile.unshift('');
+      await user.save();
+
+      res.status(201).json({message : "Image Profile removed successfully"});
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  
 });
 
 
@@ -192,4 +289,7 @@ module.exports = {
   getUserById,
   getProfileImage,
   uploadProfile,
+  updateData,
+  updatePassword,
+  removeProfile
 }

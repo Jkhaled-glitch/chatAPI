@@ -34,6 +34,21 @@ const userSchema = mongoose.Schema(
         message: props => `${props.value} is invalid phone number!`
       }
     },
+    friends: {
+      list: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }],
+      requestsSent: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }],
+      requestsReceived: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }],
+    },
+    
     isActive: {
       type: Boolean,
       default: true,
