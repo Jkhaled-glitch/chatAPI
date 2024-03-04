@@ -119,9 +119,6 @@ const getUserFriends = asyncHandler(async (req, res) => {
   
     try {
       const user = await User.findById(userId).populate('friends.list', '_id name lastName email');
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
   
       res.status(200).json({ friends: user.friends.list });
     } catch (error) {
@@ -129,9 +126,41 @@ const getUserFriends = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc    Get friend requests
+// @route   GET /users/friendRequests
+// @access  Private
+const getFriendRequests = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+  
+    try {
+      const user = await User.findById(userId).populate('friends.requestsReceived', '_id name lastName email');
+  
+      res.status(200).json( user.friends.requestsReceived );
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+});
+
+// @desc    Get friend suggestions
+// @route   GET /users/friendSuggestions
+// @access  Private
+const getFriendSuggestions = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+  
+    try {
+        const user = await User.findById(userId).populate('friends.suggestions', '_id name lastName email');
+    
+        res.status(200).json( user.friends.suggestions );
+      } catch (error) {
+        res.status(500).json({ message: error.message });
+      }
+});
+
 module.exports = {
     sendFriendRequest,
     acceptFriendRequest,
     rejectFriendRequest,
     getUserFriends,
+    getFriendRequests,
+    getFriendSuggestions,
 };

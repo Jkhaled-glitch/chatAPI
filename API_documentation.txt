@@ -51,22 +51,27 @@ USERS
     // @route   POST /users/sendFriendRequest/:friendId
     // @access  Private
 
+    // @desc    Get user's friends
+    // @route   GET /users/friends
+    // @access  Private
+
+    // @desc    Get friend requests
+    // @route   GET /users/friendRequests
+    // @access  Private
+
+    // @desc    Get friend suggestions
+    // @route   GET /users/friendSuggestions
+    // @access  Private
+
     // @desc    Accept friend request
     // @route   PUT /users/acceptFriendRequest/:requestId
     // @access  Private
-
 
     // @desc    Reject friend request
     // @route   PUT /users/rejectFriendRequest/:requestId
     // @access  Private
 
-    // @desc    Get user's friends
-    // @route   GET /users/friends
-    // @access  Private
 
-
-   
-    
 POSTS
 
     // @desc    create new post
