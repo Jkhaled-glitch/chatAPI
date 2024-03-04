@@ -120,7 +120,7 @@ const getUserFriends = asyncHandler(async (req, res) => {
     try {
       const user = await User.findById(userId).populate('friends.list', '_id name lastName email');
   
-      res.status(200).json({ friends: user.friends.list });
+      res.status(200).json( user.friends.list );
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
