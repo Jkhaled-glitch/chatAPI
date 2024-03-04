@@ -101,8 +101,38 @@ const sendMessage = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Get all messages from a conversation sorted by createdAt
+// @route   GET /conversations/:conversationId/messages
+// @access  Private (since you're getting messages from a conversation, it should be private)
 
+const getAllMessagesFromConversation = asyncHandler(async (req, res) => {
+  const { conversationId } = req.params;
 
+  try {
+    if (!mongoose.Types.ObjectId.isValid(conversationId)) {
+      return res.status(400).json({ message: 'Invalid conversation ID' });
+    }
+
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ message: 'Conversation not found' });
+    }
+
+    // Ensure the current user is a participant in the conversation
+    const userId = req.user._id;
+    const isUserParticipant = conversation.participants.some(participant => participant.equals(userId));
+    if (!isUserParticipant) {
+      return res.status(403).json({ message: 'User is not a participant of this conversation' });
+    }
+
+    // Retrieve messages from the conversation and sort them by createdAt in descending order
+    const messages = await Message.find({ conversationId }).sort({ createdAt: -1 });
+
+    res.status(200).json(messages);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 
 // @desc    Update message 
@@ -227,6 +257,7 @@ const deleteAllMessageFromConversation = async (conversationId) => {
 
 module.exports = {
   sendMessage,
+  getAllMessagesFromConversation,
   updateMessage,
   deleteAllMessageFromConversation
 }

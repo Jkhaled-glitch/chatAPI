@@ -12,7 +12,7 @@ const createPost = asyncHandler(async (req, res) => {
     uploadfileMiddleware(req, res, async (err) => {
         try {
             if (err) {
-                if (contentType && contentType === 'image' || contentType === 'mixed')
+                if (req.body.contentType && req.body.contentType === 'image' || req.body.contentType === 'mixed')
                     throw new Error(err.message);
             }
 
@@ -77,7 +77,7 @@ const createPost = asyncHandler(async (req, res) => {
 // @route   GET /users/posts
 // @access  public
 const getPosts = asyncHandler(async (req, res) => {
-    
+
     //const user = req.user;
     const posts = await Post.find();
     res.json(posts);
@@ -215,7 +215,7 @@ const addReaction = asyncHandler(async (req, res) => {
 // @access  Private
 
 const removeReaction = asyncHandler(async (req, res) => {
-    const  userId  = req.user._id;
+    const userId = req.user._id;
     const postId = req.params.postId;
 
     // Check if the post exists
@@ -235,7 +235,7 @@ const removeReaction = asyncHandler(async (req, res) => {
 
     // Remove the reaction from the reactions array
     post.reactions.splice(reactionIndex, 1);
-      
+
     // Save the updated comment
     await post.save();
     res.status(200).json({ message: 'Reaction removed successfully' });

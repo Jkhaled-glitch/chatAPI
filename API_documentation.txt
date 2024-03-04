@@ -48,7 +48,7 @@ USERS
 
 
     // @desc    Send friend request
-    // @route   POST /users/sendFriendRequest/:friendId
+    // @route   POST /users/sendRequest/:friendId
     // @access  Private
 
     // @desc    Get user's friends
@@ -56,19 +56,19 @@ USERS
     // @access  Private
 
     // @desc    Get friend requests
-    // @route   GET /users/friendRequests
+    // @route   GET /users/requests
     // @access  Private
 
     // @desc    Get friend suggestions
-    // @route   GET /users/friendSuggestions
+    // @route   GET /users/suggestions
     // @access  Private
 
     // @desc    Accept friend request
-    // @route   PUT /users/acceptFriendRequest/:requestId
+    // @route   PUT /users/acceptRequest/:requestId
     // @access  Private
 
     // @desc    Reject friend request
-    // @route   PUT /users/rejectFriendRequest/:requestId
+    // @route   PUT /users/rejectRequest/:requestId
     // @access  Private
 
 
@@ -139,6 +139,10 @@ CONVERSATION:
     // @route   POST /conversations/addConversation
     // @access  current user
     // @data    { participants(array) }
+
+    // @desc    Get all conversations of the current user sorted by updatedAt
+    // @route   GET /conversations/getAllConversations
+    // @access  Private (since you're getting conversations of the current user)
   
     // @desc    delete conversation (and  all messages)
     // @route   DELETE /conversations/:conversationId
@@ -160,6 +164,10 @@ MESSAGES
     // @route   POST /conversations/:conversationId/message/send
     // @access  participant in conversation
     // @data    {type,content,file( optionnal:(formData & 'Content-Type': 'multipart/form-data' ) )}
+
+    // @desc    Get all messages from a conversation sorted by createdAt
+    // @route   GET /conversations/:conversationId/messages
+    // @access  Private (since you're getting messages from a conversation, it should be private)
 
     // @desc    Update message 
     // @route   PUT /conversations/:conversationId/message/:messageId

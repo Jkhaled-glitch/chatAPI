@@ -14,12 +14,12 @@ const {
 } = require('../controllers/userController')
 
 const { 
-  sendFriendRequest,
-    acceptFriendRequest,
-    rejectFriendRequest,
-    getUserFriends,
-    getFriendRequests,
-    getFriendSuggestions,
+    sendRequest,
+    acceptRequest,
+    rejectRequest,
+    getFriends,
+    getRequests,
+    getSuggestions,
 } = require('../controllers/friendsController')
 
 const { protect } = require('../middleware/authMiddleware')
@@ -37,12 +37,13 @@ router.post("/profile", protect, uploadProfile);
 router.put("/removeProfile", protect, removeProfile);
 
 //friends routes
-router.post('/sendFriendRequest',protect,sendFriendRequest)
-router.get("/getFriendRequests", protect, getFriendRequests);
-router.get("/getFriendSuggestions", protect, getFriendSuggestions);
-router.get("/getUserFriends", protect, getUserFriends);
-router.put('/acceptFriendRequest',protect,acceptFriendRequest)
-router.put("/rejectFriendRequest", protect, rejectFriendRequest);
+router.post('/sendRequest',protect,sendRequest)
+router.get("/getFriends", protect, getFriends);
+router.get("/getRequests", protect, getRequests);
+router.get("/getSuggestions", protect, getSuggestions);
+
+router.put('/acceptRequest',protect,acceptRequest)
+router.put("/rejectRequest", protect, rejectRequest);
 
 
 //Post Routes 

@@ -67,6 +67,24 @@ const addConversation = asyncHandler(async (req, res) => {
 });
 
 
+// @desc    Get all conversations of the current user sorted by updatedAt
+// @route   GET /conversations/getAllConversations
+// @access  Private (since you're getting conversations of the current user)
+
+const getAllConversations = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    const conversations = await Conversation.find({ participants: userId }).sort({ updatedAt: -1 });
+
+    res.status(200).json(conversations);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+
 
 // @desc    delete conversation
 // @route   DELETE /conversation/:conversationId
@@ -194,6 +212,7 @@ const addParticipant = asyncHandler(async (req, res) => {
 
 module.exports = {
   addConversation,
+  getAllConversations,
   deleteConversation,
   addParticipant,
   removeParticipant

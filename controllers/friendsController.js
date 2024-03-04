@@ -4,7 +4,7 @@ const User = require('../models/userModel');
 // @desc    Send friend request
 // @route   POST /users/sendFriendRequest/:friendId
 // @access  Private
-const sendFriendRequest = asyncHandler(async (req, res) => {
+const sendRequest = asyncHandler(async (req, res) => {
     const userId = req.user._id;
     const friendId = req.params.friendId;
   
@@ -34,7 +34,7 @@ const sendFriendRequest = asyncHandler(async (req, res) => {
 // @desc    Accept friend request
 // @route   PUT /users/acceptFriendRequest/:requestId
 // @access  Private
-const acceptFriendRequest = asyncHandler(async (req, res) => {
+const acceptRequest = asyncHandler(async (req, res) => {
     const userId = req.user._id;
     const requestId = req.params.requestId;
   
@@ -76,7 +76,7 @@ const acceptFriendRequest = asyncHandler(async (req, res) => {
 // @desc    Reject friend request
 // @route   PUT /users/rejectFriendRequest/:requestId
 // @access  Private
-const rejectFriendRequest = asyncHandler(async (req, res) => {
+const rejectRequest = asyncHandler(async (req, res) => {
     const userId = req.user._id;
     const requestId = req.params.requestId;
   
@@ -114,11 +114,11 @@ const rejectFriendRequest = asyncHandler(async (req, res) => {
 // @desc    Get user's friends
 // @route   GET /users/friends
 // @access  Private
-const getUserFriends = asyncHandler(async (req, res) => {
+const getFriends = asyncHandler(async (req, res) => {
     const userId = req.user._id;
   
     try {
-      const user = await User.findById(userId).populate('friends.list', '_id name lastName email');
+      const user = await User.findById(userId).populate('friends.list', '_id name lastName email profile');
   
       res.status(200).json( user.friends.list );
     } catch (error) {
@@ -129,11 +129,11 @@ const getUserFriends = asyncHandler(async (req, res) => {
 // @desc    Get friend requests
 // @route   GET /users/friendRequests
 // @access  Private
-const getFriendRequests = asyncHandler(async (req, res) => {
+const getRequests = asyncHandler(async (req, res) => {
     const userId = req.user._id;
   
     try {
-      const user = await User.findById(userId).populate('friends.requestsReceived', '_id name lastName email');
+      const user = await User.findById(userId).populate('friends.requestsReceived', '_id name lastName email profile');
   
       res.status(200).json( user.friends.requestsReceived );
     } catch (error) {
@@ -144,11 +144,11 @@ const getFriendRequests = asyncHandler(async (req, res) => {
 // @desc    Get friend suggestions
 // @route   GET /users/friendSuggestions
 // @access  Private
-const getFriendSuggestions = asyncHandler(async (req, res) => {
+const getSuggestions = asyncHandler(async (req, res) => {
     const userId = req.user._id;
   
     try {
-        const user = await User.findById(userId).populate('friends.suggestions', '_id name lastName email');
+        const user = await User.findById(userId).populate('friends.suggestions', '_id name lastName email profile');
     
         res.status(200).json( user.friends.suggestions );
       } catch (error) {
@@ -157,10 +157,10 @@ const getFriendSuggestions = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
-    sendFriendRequest,
-    acceptFriendRequest,
-    rejectFriendRequest,
-    getUserFriends,
-    getFriendRequests,
-    getFriendSuggestions,
+    sendRequest,
+    acceptRequest,
+    rejectRequest,
+    getFriends,
+    getRequests,
+    getSuggestions,
 };
