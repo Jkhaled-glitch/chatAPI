@@ -1,5 +1,4 @@
 const axios = require('axios');
-const fs = require('fs'); 
 
 const downloadFileToServer = async (file, destination) => {
     try {
@@ -9,7 +8,7 @@ const downloadFileToServer = async (file, destination) => {
         
         formData.append('file', blob, file.originalname);
 
-        const response = await axios.post(`${process.env.SERVER_STORAGE_BASE_URI}/${destination}`, formData, {
+        const response = await axios.post(`${process.env.SERVER_STORAGE_BASE_URI}/${destination}s`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }

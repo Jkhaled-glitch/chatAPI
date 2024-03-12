@@ -11,7 +11,7 @@ USERS
     // @data    { email, password }
 
     // @desc    Get user data
-    // @route   GET /users/me (Authorization = 'Bearer '+token)
+    // @route   GET /users/me (Authorization = 'Bearer token')
     // @access  Private
 
      // @desc    Get user by id
@@ -52,15 +52,15 @@ USERS
     // @access  Private
 
     // @desc    Get user's friends
-    // @route   GET /users/friends
+    // @route   GET /users/getFriends
     // @access  Private
 
     // @desc    Get friend requests
-    // @route   GET /users/requests
+    // @route   GET /users/getRequests
     // @access  Private
 
     // @desc    Get friend suggestions
-    // @route   GET /users/suggestions
+    // @route   GET /users/getSuggestions
     // @access  Private
 
     // @desc    Accept friend request

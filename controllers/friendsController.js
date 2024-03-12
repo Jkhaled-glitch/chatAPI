@@ -116,7 +116,6 @@ const rejectRequest = asyncHandler(async (req, res) => {
 // @access  Private
 const getFriends = asyncHandler(async (req, res) => {
     const userId = req.user._id;
-  
     try {
       const user = await User.findById(userId).populate('friends.list', '_id name lastName email profile');
   

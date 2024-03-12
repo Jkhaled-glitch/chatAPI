@@ -6,12 +6,9 @@ const Conversation = require('../models/conversationModel');
 const downloadFileToServer = require('../config/downloadFileToServer');
 const uploadfileMiddleware = require('../config/uploadfileMiddleware')
 const deleteFilesFromStorage = require('../config/deleteFilesFromStorage')
-
-
 // @desc    send new message
 // @route   POST /conversations/:conversationId/message/send
 // @access  current user and participant in conversation
-
 
 const sendMessage = asyncHandler(async (req, res) => {
   uploadfileMiddleware(req, res, async (err) => {
@@ -26,23 +23,19 @@ const sendMessage = asyncHandler(async (req, res) => {
       const sender = req.user._id;
       const conversationId = req.params.conversationId;
 
-
       if (!mongoose.Types.ObjectId.isValid(conversationId)) {
         return res.status(400).json({ message: 'Invalid conversation ID' });
       }
-
 
       const conversation = await Conversation.findById(conversationId);
       if (!conversation) {
         return res.status(404).json({ message: 'Conversation not found' });
       }
 
-
       const isUserParticipant = conversation.participants.some(participant => participant.equals(sender));
       if (!isUserParticipant) {
         return res.status(403).json({ message: 'Sender is not a participant of this conversation' });
       }
-
 
       if (!type || type === 'text' || type === '') {
         type = 'text'
@@ -57,25 +50,19 @@ const sendMessage = asyncHandler(async (req, res) => {
           }
         } else {
           if (type === 'file' || type === 'image') {
-
             const file = req.file;
             if (!file) {
               throw new Error('No file uploaded');
             } else {
               //file handler
               type = file.mimetype.startsWith('image/') ? 'image' : 'file';
-
               content = await downloadFileToServer(file, type);
-
             }
-
           } else {
             throw new Error('Type is Not Valide');
           }
-
         }
       }
-
 
       const message = await Message.create({
         sender: sender,
@@ -87,19 +74,21 @@ const sendMessage = asyncHandler(async (req, res) => {
       });
 
       // Mise à jour de la conversation
-      await Conversation.findOneAndUpdate(
+      const upadatedconversation = await Conversation.findOneAndUpdate(
         { _id: conversationId },
         { $push: { messages: { $each: [message._id], $position: 0 } } },
         { new: true }
-      );
-
-      // Envoi de la réponse avec le message créé
-      res.status(201).json(message);
+      )
+      // use io to emit message
+      const io = req.io;
+      io.emit('message', message);
+      res.status(201).send(message);
     } catch (err) {
       res.status(400).json({ message: err.message });
     }
   });
 });
+
 
 // @desc    Get all messages from a conversation sorted by createdAt
 // @route   GET /conversations/:conversationId/messages
@@ -149,9 +138,6 @@ const updateMessage = asyncHandler(async (req, res) => {
   let hasData = false;
 
   const updateFields = {};
-
-
-
 
   const message = await Message.findOne({ _id: messageId, conversationId });
 

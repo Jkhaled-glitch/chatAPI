@@ -75,13 +75,20 @@ const getAllConversations = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
   try {
-    const conversations = await Conversation.find({ participants: userId }).sort({ updatedAt: -1 });
+    const conversations = await Conversation.find({ participants: userId }).sort({ updatedAt: -1 }).populate({
+      path: 'participants',
+      select: 'name lastName phone profile'
+    }).populate({
+      path: 'messages',
+      select: ' sender type content seenBy deletedFor status createdAt'
+    });
 
     res.status(200).json(conversations);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
+
 
 
 
