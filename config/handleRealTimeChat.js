@@ -4,10 +4,10 @@ let onlinesUsers = [];
 
 function handleConnection(socket,io) {
   
-  socket.on('addNewUser', (userId) => {
-    if (!onlinesUsers.some(user => user.userId === userId)) {
+  socket.on('addNewUser', (newUser) => {
+    if (!onlinesUsers.some(user => user._id === newUser._id)) {
       onlinesUsers.push({
-        userId,
+        user:newUser,
         socketId: socket.id
       });
     }
